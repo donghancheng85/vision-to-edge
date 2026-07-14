@@ -1,0 +1,16 @@
+module(
+    name = "vision-to-edge",
+    version = "0.1.0",
+    bazel_compatibility = [">=7.0.0"],
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "platforms", version = "1.0.0")
+
+# System-installed ROS 2 Jazzy — wraps /opt/ros/jazzy headers + libs
+ros2_system_repo = use_repo_rule("//tools:ros2_system.bzl", "ros2_system_repo")
+ros2_system_repo(
+    name = "ros2_system",
+    distro = "jazzy",
+    prefix = "/opt/ros/jazzy",
+)

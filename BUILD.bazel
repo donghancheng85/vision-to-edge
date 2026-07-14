@@ -1,0 +1,16 @@
+# Platform targets used by --config=x86 and --config=arm64 in .bazelrc
+platform(
+    name = "x86_linux",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+platform(
+    name = "arm64_linux",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)

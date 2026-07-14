@@ -1,0 +1,16 @@
+# ── Common ───────────────────────────────────────────────────────────────────
+build --enable_platform_specific_config
+
+# ── Platform configs ─────────────────────────────────────────────────────────
+build:x86   --platforms=//:x86_linux
+build:arm64 --platforms=//:arm64_linux
+
+# ── C++ standard ─────────────────────────────────────────────────────────────
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# ── ROS 2 runtime ─────────────────────────────────────────────────────────────
+# Ensures `bazel run` finds transitive ROS 2 shared libraries (RUNPATH only
+# covers the binary's own direct deps; system .so files need LD_LIBRARY_PATH
+# for their transitive deps to be resolved at runtime).
+run --run_env=LD_LIBRARY_PATH=/opt/ros/jazzy/lib

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# UV
+# uv.lock is intentionally tracked (lockfile for reproducibility)
+
+# Artifacts (generated files)
+artifacts/models/*.onnx
+artifacts/models/*.engine
+artifacts/models/*.trt
+artifacts/checkpoints/*.pt
+artifacts/checkpoints/*.pth
+
+# Bazel
+bazel-*
+.bazel/
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+wandb/
+runs/
+mlruns/
