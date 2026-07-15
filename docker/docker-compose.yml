@@ -1,0 +1,38 @@
+# Build and run helpers for the two deployment images.
+# Training runs natively on the host (GPU already present).
+#
+# Build x86:   docker compose build deploy-x86
+# Build arm64: docker compose build deploy-arm64   (requires buildx + QEMU)
+# Shell x86:   docker compose run --rm deploy-x86
+
+services:
+  deploy-x86:
+    build:
+      context: ..
+      dockerfile: docker/deploy-x86/Dockerfile
+    image: vision-edge:deploy-x86
+    network_mode: host
+    volumes:
+      - ../artifacts:/workspace/artifacts   # share exported models
+    environment:
+      - LD_LIBRARY_PATH=/opt/ros/jazzy/lib
+    stdin_open: true
+    tty: true
+
+  deploy-arm64:
+    build:
+      context: ..
+      dockerfile: docker/deploy-arm64/Dockerfile
+      # Cross-build on x86 host via QEMU:
+      #   docker buildx create --use
+      #   docker compose build deploy-arm64
+      platforms:
+        - linux/arm64
+    image: vision-edge:deploy-arm64
+    network_mode: host
+    volumes:
+      - ../artifacts:/workspace/artifacts
+    environment:
+      - LD_LIBRARY_PATH=/opt/ros/humble/lib
+    stdin_open: true
+    tty: true

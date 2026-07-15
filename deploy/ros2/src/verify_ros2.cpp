@@ -11,5 +11,8 @@ int main()
         RCLCPP_VERSION_MINOR,
         RCLCPP_VERSION_PATCH);
     std::printf("Bazel bzlmod + system ROS 2 Jazzy : OK\n");
+
+    auto cpp_version = __cplusplus;
+    std::printf("C++ language standard version : %ld\n", cpp_version);
     return 0;
 }
