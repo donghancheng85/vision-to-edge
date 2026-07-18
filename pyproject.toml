@@ -27,6 +27,7 @@ dependencies = [
     # Logging / progress
     "rich>=13.0.0",
     "tqdm>=4.67.0",
+    "wandb>=0.28.0",
 ]
 
 # nuscenes-devkit is intentionally excluded from managed deps:

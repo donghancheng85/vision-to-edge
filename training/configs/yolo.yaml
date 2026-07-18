@@ -1,0 +1,55 @@
+# Default hyperparameters for YOLOv11 training.
+# All fields map 1-to-1 to TrainingConfig dataclass fields.
+# Override any value via the CLI:  uv run python -m training.models.yolo.train --epochs 50
+
+# ── Data ────────────────────────────────────────────────────────────
+dataset_format: yolo-txt        # "coco" | "yolo-txt"
+input_size: 640
+num_classes: 80                  # COCO default; change for custom datasets
+num_workers: 8
+
+# ── Model ───────────────────────────────────────────────────────────
+model_size: s                    # n=nano  s=small  m=medium  l=large  x=extra
+pretrained: null
+
+# ── Optimizer & LR schedule ─────────────────────────────────────────
+optimizer: AdamW
+lr0: 0.01
+lrf: 0.01                        # final lr = lr0 * lrf  (cosine floor)
+momentum: 0.937                  # SGD momentum / Adam β1
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_bias_lr: 0.1
+
+# ── Training loop ────────────────────────────────────────────────────
+epochs: 300
+batch_size: 16
+mixed_precision: true
+gradient_clip_val: 10.0
+seed: 0
+close_mosaic: 10                 # disable mosaic in last N epochs (like YOLOv8)
+
+# ── Augmentation ─────────────────────────────────────────────────────
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+fliplr: 0.5
+flipud: 0.0
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+
+# ── Loss weights ─────────────────────────────────────────────────────
+box_gain: 7.5
+cls_gain: 0.5
+dfl_gain: 1.5
+
+# ── Output & logging ──────────────────────────────────────────────────
+output_dir: artifacts/runs
+project: vision-to-edge          # W&B project name
+run_name: null                   # auto-generated timestamp if null
+save_period: -1                  # -1 = save last.pt + best.pt only
+resume: null
