@@ -1,5 +1,6 @@
 from training.common.base_trainer import BaseTrainer, TrainingConfig
 from training.common.callbacks import EarlyStopping
+from training.common.coco_names import COCO_NAMES, get_names
 from training.common.dataset import (
     BaseDetectionDataset,
     COCODetectionDataset,
@@ -14,6 +15,8 @@ __all__ = [
     "BaseTrainer",
     "TrainingConfig",
     "EarlyStopping",
+    "COCO_NAMES",
+    "get_names",
     "BaseDetectionDataset",
     "COCODetectionDataset",
     "YOLOTxtDataset",

@@ -19,6 +19,7 @@ artifacts/models/*.engine
 artifacts/models/*.trt
 artifacts/checkpoints/*.pt
 artifacts/checkpoints/*.pth
+artifacts/data/*
 
 # Bazel
 bazel-*

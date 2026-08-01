@@ -280,6 +280,10 @@ class YOLOv11Loss:
         ).transpose(1, 2)                                  # [B, N, no]
         pred_dist, pred_cls = flat.split([4 * self.reg_max, self.nc], dim=-1)
 
+        # Cast to fp32 for numerical stability (safe under AMP where preds are fp16)
+        pred_dist = pred_dist.float()
+        pred_cls  = pred_cls.float()
+
         # Decode DFL distribution → offsets (grid-cell units) → xyxy pixels
         dist4       = pred_dist.view(B, N, 4, self.reg_max).softmax(-1)
         bins        = torch.arange(self.reg_max, device=device, dtype=torch.float32)
@@ -309,11 +313,14 @@ class YOLOv11Loss:
             loss_box = ((1.0 - iou) * assigned_scores[fg_mask]).sum() / norm
 
         # ── Classification loss (soft BCE) ───────────────────────────────────
-        cls_target = torch.zeros_like(pred_cls)
+        cls_target = torch.zeros_like(pred_cls)           # fp32
         if fg_mask.any():
             fg_cls   = assigned_labels[fg_mask].clamp(0).long()
-            fg_score = assigned_scores[fg_mask].unsqueeze(-1)
-            cls_target[fg_mask].scatter_(-1, fg_cls.unsqueeze(-1), fg_score)
+            fg_score = assigned_scores[fg_mask].unsqueeze(-1)   # fp32
+            # scatter returns a NEW tensor; assign back (boolean index = copy)
+            cls_target[fg_mask] = cls_target[fg_mask].scatter(
+                -1, fg_cls.unsqueeze(-1), fg_score
+            )
         loss_cls = self.bce(pred_cls, cls_target).sum() / norm
 
         # ── DFL loss ─────────────────────────────────────────────────────────

@@ -294,7 +294,7 @@ class BaseTrainer(abc.ABC):
         metrics["train/lr"] = self.optimizer.param_groups[0]["lr"]
         return metrics
 
-    @torch.no_grad()
+    @torch.inference_mode()  # stricter than no_grad: skips version counters, ~10% faster
     def _validate(self, epoch: int, loader: DataLoader) -> dict[str, float]:
         self.model.eval()
         all_preds: list[Any] = []
