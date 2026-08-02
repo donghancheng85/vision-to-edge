@@ -14,7 +14,7 @@ pretrained: null
 
 # ── Optimizer & LR schedule ─────────────────────────────────────────
 optimizer: AdamW
-lr0: 0.01
+lr0: 0.001                   # AdamW standard: 1e-3.  For SGD use 0.01
 lrf: 0.01                        # final lr = lr0 * lrf  (cosine floor)
 momentum: 0.937                  # SGD momentum / Adam β1
 weight_decay: 0.0005

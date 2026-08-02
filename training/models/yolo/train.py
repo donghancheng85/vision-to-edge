@@ -119,7 +119,8 @@ class YOLOTrainer(BaseTrainer):
                 boxes  = p[:, :4]                    # xyxy
                 scores, cls_ids = p[:, 4:].max(dim=1)
 
-                mask = scores > 0.25                 # confidence threshold
+                mask = scores > 0.001   # low threshold: model is undertrained early on;
+                                        # raise to 0.25 only after loss has stabilised
                 if mask.any():
                     keep = batched_nms(boxes[mask], scores[mask], cls_ids[mask], iou_threshold=0.45)
                     det  = torch.cat([

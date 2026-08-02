@@ -205,7 +205,11 @@ class BaseTrainer(abc.ABC):
     # ── Main training entry point ─────────────────────────────────────────────
 
     def train(self) -> None:
+        import warnings
         from training.common.callbacks import EarlyStopping
+        # SequentialLR calls step() on sub-schedulers during __init__, which
+        # triggers a spurious "step before optimizer" warning.  It is harmless.
+        warnings.filterwarnings("ignore", message="Detected call of", category=UserWarning)
 
         self._init_wandb()
 
@@ -339,14 +343,16 @@ class BaseTrainer(abc.ABC):
         if self.cfg.save_period > 0 and (epoch + 1) % self.cfg.save_period == 0:
             torch.save(state, self.run_dir / f"epoch{epoch + 1:04d}.pt")
 
-        # Log checkpoint as a W&B artifact
-        if self.wandb_run:
+        # Upload ONLY the best checkpoint as a W&B artifact.
+        # Uploading last.pt every epoch wastes bandwidth (300 × model_size MB).
+        if self.wandb_run and is_best:
+            best_path = self.run_dir / "best.pt"
             artifact = _wandb.Artifact(
                 name=f"model-{self.wandb_run.id}",
                 type="model",
                 metadata=metrics,
             )
-            artifact.add_file(str(last_path))
+            artifact.add_file(str(best_path))
             self.wandb_run.log_artifact(artifact)
 
     def _load_checkpoint(
@@ -414,13 +420,19 @@ class BaseTrainer(abc.ABC):
             Finer-grained LR updates produce smoother loss curves,
             especially during the warmup phase.
         """
+        import warnings
         warmup_steps = max(1, round(self.cfg.warmup_epochs * steps_per_epoch))
         total_steps  = self.cfg.epochs * steps_per_epoch
         cosine_steps = max(1, total_steps - warmup_steps)
 
-        warmup = LinearLR(optimizer, start_factor=1e-4, end_factor=1.0, total_iters=warmup_steps)
-        cosine = CosineAnnealingLR(optimizer, T_max=cosine_steps, eta_min=self.cfg.lr0 * self.cfg.lrf)
-        return SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_steps])
+        # All three scheduler constructors call step() during __init__, which
+        # triggers a harmless PyTorch warning about step order. Wrap all three.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            warmup = LinearLR(optimizer, start_factor=1e-4, end_factor=1.0, total_iters=warmup_steps)
+            cosine = CosineAnnealingLR(optimizer, T_max=cosine_steps, eta_min=self.cfg.lr0 * self.cfg.lrf)
+            sched  = SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_steps])
+        return sched
 
     # ── W&B helpers ───────────────────────────────────────────────────────────
 

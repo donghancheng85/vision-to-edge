@@ -313,6 +313,12 @@ class YOLOv11Loss:
             loss_box = ((1.0 - iou) * assigned_scores[fg_mask]).sum() / norm
 
         # ── Classification loss (soft BCE) ───────────────────────────────────
+        # Normalize by target_scores.sum() (sum of soft alignment weights),
+        # NOT by fg_mask.sum().
+        # Reason: the BCE sums over ALL B×N×nc elements (background anchors
+        # included), so normalising by raw fg_count inflates the loss when
+        # there are few foreground anchors.  Using target_scores.sum() gives
+        # the same scale as Ultralytics YOLOv8 and keeps cls/box balanced.
         cls_target = torch.zeros_like(pred_cls)           # fp32
         if fg_mask.any():
             fg_cls   = assigned_labels[fg_mask].clamp(0).long()
@@ -321,7 +327,8 @@ class YOLOv11Loss:
             cls_target[fg_mask] = cls_target[fg_mask].scatter(
                 -1, fg_cls.unsqueeze(-1), fg_score
             )
-        loss_cls = self.bce(pred_cls, cls_target).sum() / norm
+        cls_norm  = max(cls_target.sum().item(), 1.0)
+        loss_cls  = self.bce(pred_cls, cls_target).sum() / cls_norm
 
         # ── DFL loss ─────────────────────────────────────────────────────────
         if fg_mask.any():
