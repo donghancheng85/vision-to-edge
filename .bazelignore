@@ -1,0 +1,6 @@
+# Directories excluded from Bazel package discovery.
+# .venv ships vendored BUILD.bazel files (e.g. torchgen) meant for other
+# repos; without this, `bazel query //...` fails trying to load them.
+.venv
+artifacts
+docker

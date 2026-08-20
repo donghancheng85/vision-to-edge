@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# strip_include_prefix removes "/deploy/include" so consumers write:
+#   #include "common/onnx_infer.hpp"
+cc_library(
+    name = "headers",
+    hdrs = glob(["*.hpp"]),
+    strip_include_prefix = "/deploy/include",
+    visibility = ["//visibility:public"],
+)

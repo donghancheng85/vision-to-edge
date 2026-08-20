@@ -4,8 +4,14 @@ module(
     bazel_compatibility = [">=7.0.0"],
 )
 
-bazel_dep(name = "rules_cc", version = "0.2.17")
-bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.20")
+bazel_dep(name = "platforms", version = "1.1.0")
+
+# System-installed OpenCV (apt libopencv-dev, currently 4.6.0) — avoids
+# compiling OpenCV/abseil from source, which triggers a GCC 13 ICE and can
+# exhaust RAM under full parallelism. Install via: sudo apt install libopencv-dev
+opencv_system_repo = use_repo_rule("//tools:opencv_system.bzl", "opencv_system_repo")
+opencv_system_repo(name = "opencv")
 
 # System-installed ROS 2 Jazzy — wraps /opt/ros/jazzy headers + libs
 ros2_system_repo = use_repo_rule("//tools:ros2_system.bzl", "ros2_system_repo")
@@ -13,4 +19,15 @@ ros2_system_repo(
     name = "ros2_system",
     distro = "jazzy",
     prefix = "/opt/ros/jazzy",
+)
+
+# ONNX Runtime C++ SDK (downloaded from GitHub releases)
+# Set gpu=True to use the CUDA-enabled build (requires matching CUDA toolkit).
+# Update version to match your Python onnxruntime: `python -c "import onnxruntime; print(onnxruntime.__version__)"`
+onnxruntime_repo = use_repo_rule("//tools:onnxruntime.bzl", "onnxruntime_repo")
+onnxruntime_repo(
+    name    = "onnxruntime",
+    version = "1.20.1",   # update if needed
+    arch    = "x86_64",
+    gpu     = False,      # set True for CUDAExecutionProvider
 )

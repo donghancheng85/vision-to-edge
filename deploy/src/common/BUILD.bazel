@@ -1,0 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "onnx_infer",
+    srcs = ["onnx_infer.cpp"],
+    deps = [
+        "//deploy/include/common:headers",
+        "@onnxruntime//:onnxruntime",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "image_utils",
+    srcs = ["image_utils.cpp"],
+    deps = [
+        ":onnx_infer",
+        "//deploy/include/common:headers",
+        "//deploy/include/yolo:headers",
+        "@opencv//:opencv",
+    ],
+    visibility = ["//visibility:public"],
+)
+

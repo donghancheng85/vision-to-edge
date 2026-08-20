@@ -1,0 +1,23 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_library(
+    name = "yolo_detector",
+    srcs = ["yolo_detector.cpp"],
+    deps = [
+        "//deploy/include/yolo:headers",
+        "//deploy/src/common:onnx_infer",
+        "//deploy/src/common:image_utils",
+        "@opencv//:opencv",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "yolo_main",
+    srcs = ["yolo_main.cpp"],
+    deps = [
+        ":yolo_detector",
+        "//deploy/src/common:image_utils",
+        "@opencv//:opencv",
+    ],
+)

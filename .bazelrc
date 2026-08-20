@@ -1,6 +1,16 @@
 # ── Common ───────────────────────────────────────────────────────────────────
 build --enable_platform_specific_config
 
+# ── Stability: cap parallelism to prevent OOM-induced system freezes ────────
+# Heavily templated C++ (OpenCV, abseil) can use several GB of RAM per
+# compile job. On this machine (32 cores / 60GB RAM / 8GB swap), unbounded
+# parallelism can exceed available memory and freeze the whole desktop
+# instead of cleanly failing. Keep concurrent actions well under core count
+# and give Bazel a conservative RAM budget so the scheduler throttles itself.
+build --jobs=8
+build --local_resources=memory=20480
+build --local_resources=cpu=8
+
 # ── Platform configs ─────────────────────────────────────────────────────────
 build:x86   --platforms=//:x86_linux
 build:arm64 --platforms=//:arm64_linux
@@ -13,4 +23,4 @@ build --host_cxxopt=-std=c++17
 # Ensures `bazel run` finds transitive ROS 2 shared libraries (RUNPATH only
 # covers the binary's own direct deps; system .so files need LD_LIBRARY_PATH
 # for their transitive deps to be resolved at runtime).
-run --run_env=LD_LIBRARY_PATH=/opt/ros/jazzy/lib
+run --run_env=LD_LIBRARY_PATH=/opt/ros/jazzy/lib:/home/donghancheng85/gitrepo/vision-to-edge/bazel-vision-to-edge/external/+onnxruntime_repo+onnxruntime/lib
